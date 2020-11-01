@@ -1,20 +1,28 @@
 package com.company;
 
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 import java.util.Set;
 
 public class ShowTime implements Runnable {
     private static final Object lock = new Object();
     private Set<Seat> freeSeats;
+    private Set<Seat> booked;
+    private int rows;
+    private int seats;
 
     /**
      * Конструктор сеанса кино
      *
      * @param s Все доступные места для покупателей
      */
-    public ShowTime(Set<Seat> s) {
+    public ShowTime(Set<Seat> s, int r, int t, Set<Seat> b) {
         freeSeats = s;
+        rows = r;
+        seats = t;
+        booked = b;
     }
 
     /**
@@ -50,10 +58,44 @@ public class ShowTime implements Runnable {
                 freeSeats) {
             if (seat.getRow() == freeSeat.getRow() && seat.getSeat() == freeSeat.getSeat()) {
                 freeSeats.remove(freeSeat);
+                booked.add(seat);
+                // для наглядности в файле забронированные места помечаются 1, свободные 0
+                printBookedSeatsToFile();
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Функция выводит в файл вид кинозала на текущий момент. Забронированные (или недоступные для брони) места помечены 1, свободные 0.
+     */
+    void printBookedSeatsToFile(){
+        try(FileWriter writer = new FileWriter("BookedSeats.txt", false))
+        {
+            boolean flag;
+            for (int i = 0; i < rows; i++) {
+
+                for (int j = 0; j < seats; j++) {
+                    flag = false;
+                    for (Seat s :
+                            booked) {
+                        if (s.getRow()==i && s.getSeat()==j) {
+                            flag = true;
+                            writer.write("1 ");
+                        }
+                    }
+                    if (!flag) {
+                        writer.write("0 ");
+                    }
+                }
+                writer.write("\n");
+            }
+            writer.flush();
+        }
+        catch(IOException ex){
+            System.out.println(ex.getMessage());
+        }
     }
 
     /**

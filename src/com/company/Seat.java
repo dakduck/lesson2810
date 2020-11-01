@@ -18,7 +18,7 @@ public class Seat {
     public Seat(int row, int seat) {
         this.row = row;
         this.seat = seat;
-        this.summ = row*seat;
+        this.summ = row*seat+1;
     }
 
     public int getRow() {
